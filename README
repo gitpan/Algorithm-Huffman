@@ -8,6 +8,10 @@ SYNOPSIS
   my $huff = Algorithm::Huffman->new(\%char_counting);
   my $encode_hash = $huff->encode_hash;
   my $decode_hash = $huff->decode_hash;
+  
+  print "Look at the encoding bitstring of 'Hello': ", 
+        $huff->encode_bitstring("Hello");
+  
 
 INSTALLATION
 
@@ -26,12 +30,14 @@ This module requires these other modules and libraries:
          Heap::Fibonacci  
          Heap::Elem       
          Tree::DAG_Node   
+         List::Util
 
-         # Modules for the test script
+         # Modules only for the test script
          Test::More       
          Test::ManyParams 
          Test::Exception  
          Data::Dumper     
+         String::Random
 
 COPYRIGHT AND LICENCE
 

@@ -10,10 +10,11 @@ our @ISA = qw(Exporter);
 
 # Nothing to export here
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 use Heap::Fibonacci;
 use Tree::DAG_Node;
+use List::Util qw/max/;
 
 sub new {
     my ($proto, $count_hash) = @_;
@@ -53,7 +54,8 @@ sub new {
     
     my $self = {
         encode => \%encode,
-        decode => \%decode
+        decode => \%decode,
+        max_length_encoding_key => max map length, keys %encode
     };
     
     bless $self, $class;
@@ -67,6 +69,25 @@ sub encode_hash {
 sub decode_hash {
     my $self = shift;
     $self->{decode};
+}
+
+sub encode_bitstring {
+    my ($self, $string) = @_;
+    my $max_length_encoding_key = $self->{max_length_encoding_key};
+    my %encode_hash = %{$self->encode_hash};
+
+    my $bitstring = "";
+    my ($index, $max_index) = (0, length($string)-1);
+    while ($index <= $max_index) {
+        for (my $l = $max_length_encoding_key; $l > 0; $l--) {
+            if (my $bits = $encode_hash{substr($string, $index, $l)}) {
+                $bitstring .= $bits;
+                $index     += length $bits;
+                last;
+            }
+        }
+    }
+    return $bitstring;
 }
 
 1;
@@ -122,6 +143,9 @@ Algorithm::Huffman - Perl extension that implements the Huffman algorithm
   my $huff = Algorithm::Huffman->new(\%char_counting);
   my $encode_hash = $huff->encode_hash;
   my $decode_hash = $huff->decode_hash;
+  
+  print "Look at the encoding bitstring of 'Hello': ", 
+        $huff->encode_bitstring("Hello");
 
 =head1 DESCRIPTION
 
@@ -242,6 +266,25 @@ The keys of the decoding hash are the bit presentations,
 while the values are the characters/strings the bitstrings stands for.
 Please note that the bit represantations are strings 
 of ones and zeros is returned and not binary numbers.
+
+=item $huff->encode_bitstring($string)
+
+Returns a bitstring of '1' and '0',
+representing an encoded version (with the current huffman tree) 
+of the given string.
+
+There could be some ambiguities,
+e.g. if there is an 'e' and an 'er' in the huffman tree.
+This algorithm is greedy.
+That means the given string is traversed from the beginning
+and in every loop, the longest possible encoding from the huffman tree is taken.
+In the above example,
+that would be 'er' instead of 'e'.
+
+The greedy way isn't guarantueed to exist also in future versions.
+(E.g., I could imagine to look for the next two (or n) possible encoding
+substrings from the huffman tree
+and to select the one with the shortest encoding bitstring).
 
 =back   
 

@@ -5,7 +5,7 @@ use warnings;
 
 use Algorithm::Huffman;
 
-use Test::More qw/no_plan/; #tests => 9;
+use Test::More tests => 13;
 use Test::ManyParams;
 use Test::Exception;
 

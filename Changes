@@ -1,5 +1,8 @@
 Revision history for Perl extension Algorithm::Huffman.
 
+0.03  Mon Aug 26
+        - implemented encode_bitstring($orig_string) method
+
 0.02  Tue Aug 20
         - implemented $huff->decode_hash method
 

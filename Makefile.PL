@@ -10,12 +10,14 @@ WriteMakefile(
          Heap::Fibonacci  => 0,
          Heap::Elem       => 0,
          Tree::DAG_Node   => 0,
+         List::Util       => 0,
 
          # Modules for the test script
          Test::More       => 0,
          Test::ManyParams => 0.04,
          Test::Exception  => 0,
-         Data::Dumper     => 0
+         Data::Dumper     => 0,
+         String::Random   => 0
     }, # e.g., Module::Name => 1.1
     ($] >= 5.005 ?    ## Add these new keywords supported since 5.005
       (AUTHOR     => 'Janek Schleicher <bigj@kamelfreund.de>') : ()),
