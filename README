@@ -1,4 +1,4 @@
-Algorithm/Huffman version 0.07
+Algorithm/Huffman version 0.08
 ==============================
 
 SYNOPSIS
@@ -8,15 +8,15 @@ SYNOPSIS
   my %char_counting = map {$_ => int rand(100)} ('a' .. 'z', 'A' .. 'Z');
   # or better the real counting for your characters
   # as the huffman algorithm doesn't work good with random data :-)) 
- 
+
   my $huff = Algorithm::Huffman->new(\%char_counting);
   my $encode_hash = $huff->encode_hash;
   my $decode_hash = $huff->decode_hash;
-  
-  print "Look at the encoding bitstring of 'Hello': ", 
-        $huff->encode_bitstring("Hello");
-        
-  print "The decoding of 110011001 is ", $huff->decode_bitstring("110011001");
+
+  my $encode_of_hello = $huff->encode_bitstring("Hello");
+
+  print "Look at the encoding bitstring of 'Hello': $encode_of_hello\n";
+  print "The decoding of $encode_of_hello is '", $huff->decode_bitstring($encode_of_hello), "'";
 
 
 INSTALLATION

@@ -9,9 +9,7 @@ require Exporter;
 
 our @ISA = qw(Exporter);
 
-# Nothing to export here
-
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 
 use Heap::Fibonacci;
 use Tree::DAG_Node;
@@ -21,12 +19,7 @@ sub new {
     my ($proto, $count_hash) = @_;
     my $class = ref($proto) || $proto;
     
-    croak "Undefined counting hash" unless defined $count_hash;
-    croak "The argument for the counting hash is not a hash reference, as expected" 
-        unless ref($count_hash) eq 'HASH';
-    croak "The counting hash must have at least 2 keys" 
-        unless scalar(keys(%$count_hash)) >= 2;
-    
+    __validate_counting_hash($count_hash);
     my $heap = Heap::Fibonacci->new;
     
     my $size = 0;
@@ -127,6 +120,16 @@ sub decode_bitstring {
     }
     return $string;
 }
+sub __validate_counting_hash {
+    my $c = shift;
+    my $error_msg = undef;
+    defined $c        
+        or croak "Undefined counting hash";
+    ref($c) eq 'HASH' 
+        or croak "The argument for the counting hash is not a hash reference, as expected";
+    scalar(keys %$c) >= 2
+        or croak "The counting hash must have at least 2 keys";
+}
 
 1;
 
@@ -181,15 +184,15 @@ Algorithm::Huffman - Perl extension that implements the Huffman algorithm
   my %char_counting = map {$_ => int rand(100)} ('a' .. 'z', 'A' .. 'Z');
   # or better the real counting for your characters
   # as the huffman algorithm doesn't work good with random data :-)) 
- 
+
   my $huff = Algorithm::Huffman->new(\%char_counting);
   my $encode_hash = $huff->encode_hash;
   my $decode_hash = $huff->decode_hash;
-  
-  print "Look at the encoding bitstring of 'Hello': ", 
-        $huff->encode_bitstring("Hello");
-        
-  print "The decoding of 110011001 is ", $huff->decode_bitstring("110011001");
+
+  my $encode_of_hello = $huff->encode_bitstring("Hello");
+
+  print "Look at the encoding bitstring of 'Hello': $encode_of_hello\n";
+  print "The decoding of $encode_of_hello is '", $huff->decode_bitstring($encode_of_hello), "'";
 
 =head1 DESCRIPTION
 
