@@ -2,14 +2,15 @@
 
 use Algorithm::Huffman;
 use String::Random qw/random_string/;
-use Test::More tests => 3 * 20;
+use Test::More tests => 3 * 20 + 2;
 use List::Util qw/max/;
 use Data::Dumper;
+use Test::Exception;
 
 use constant MAX_COUNT            =>  1_000;
 use constant MAX_SUBSTRING_LENGTH =>     10;
-use constant HUFFMAN_ELEMENTS     =>  5;#_000;
-use constant LONG_STRING_LENGTH   => 10;#_000;
+use constant HUFFMAN_ELEMENTS     =>  5_000;
+use constant LONG_STRING_LENGTH   => 10_000;
 
 sub myrand($) {
     return int( rand( int rand shift() ) + 1 );
@@ -49,3 +50,19 @@ for (1 .. 20) {
        "Decoding of encoding bitstring should be the same as the orig";
 }
 
+my $string    = random_string('c' x LONG_STRING_LENGTH);
+
+UNKNOWN_CHAR_IN_BITSTRING_SHOULD_PRODUCE_AN_EXCEPTION: {
+    my $bitstring = $huff->encode_bitstring($string);
+    substr($bitstring,length($string)/2,1) = "a";
+    throws_ok {$huff->decode_bitstring($bitstring)} 
+              qr/unknown/i, 
+              "Unknown character (an a instead 0/1) into the bitstring";
+}
+
+BITSTRING_TOO_SHORT: {
+    my $bitstring = $huff->encode_bitstring($string);
+    $bitstring = substr($bitstring,0,length($bitstring-1));
+    dies_ok {$huff->decode_bitstring($bitstring)}
+            "Removed the last bit of the bitstring -> should die";
+}

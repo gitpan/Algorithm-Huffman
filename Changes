@@ -1,5 +1,10 @@
 Revision history for Perl extension Algorithm::Huffman.
 
+0.05  Thu Aug 29
+        - improved decode_bitstring method
+          * exceptions are raised instead of an endless loop
+            if an unknown character sequence is found
+
 0.04  Wed Aug 28
         - implemented decode_bitstring($bitstring) method
         - fixed bug: The returned encode_bitstring had 

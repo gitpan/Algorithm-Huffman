@@ -10,11 +10,11 @@ our @ISA = qw(Exporter);
 
 # Nothing to export here
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 use Heap::Fibonacci;
 use Tree::DAG_Node;
-use List::Util qw/max/;
+use List::Util qw/max min first/;
 
 sub new {
     my ($proto, $count_hash) = @_;
@@ -55,7 +55,9 @@ sub new {
     my $self = {
         encode => \%encode,
         decode => \%decode,
-        max_length_encoding_key => max map length, keys %encode
+        max_length_encoding_key => max( map length, keys %encode ),
+        max_length_decoding_key => max( map length, keys %decode ),
+        min_length_decoding_key => min( map length, keys %decode )
     };
     
     bless $self, $class;
@@ -92,21 +94,24 @@ sub encode_bitstring {
 
 sub decode_bitstring {
     my ($self, $bitstring) = @_;
+    
+    my $max_length_decoding_key = $self->{max_length_decoding_key};
+    my $min_length_decoding_key = $self->{min_length_decoding_key};
     my %decode_hash = %{$self->decode_hash};
     
     my $string = "";
     my ($index, $max_index) = (0, length($bitstring)-1);
     while ($index < $max_index) {
-        for (my $l = 1; "search for a decode possibility"; $l++) {
-           if (my $decode = $decode_hash{substr($bitstring,$index,$l)}) {
+        my $decode = undef;
+        foreach my $l ($min_length_decoding_key .. $max_length_decoding_key) {
+            if ($decode = $decode_hash{substr($bitstring,$index,$l)}) {
                 $string .= $decode;
                 $index  += $l;
                 last;
-           }
-           # anywhen a decode possibility is found
-           # thanks to the huffman algorithm
-           # of course only, if there are 1's and 0's in the string
+            }
         }
+        defined $decode
+            or die "Unknown bit sequence starting at $index in the bitstring" 
     }
     return $string;
 }
@@ -316,13 +321,19 @@ Allthough the encoding could be a bit ambigious,
 the decoding is alway unambigious.
 
 Please take care that only ones and zeroes are in the bitstring.
-It isn't tested what will happen elsewhere,
-but it is assumed that the program will come into an endless loop.
-(As the method tries to match substrings (that becomes longer and longer)
- from the bitstring with keys of the decode_hash).
-I don't catch this error case,
-as it would create a significant overhead.
-Look the ostrich algorithm for details :-))
+The method will die otherwise.
+
+It will also die if the bitstring isnt complete.
+E.g., assuming,
+you have a Huffman-Table
+
+  a => 1
+  b => 01
+  c => 00
+  
+and wanted to code 'abc'. The right coding is '10100'.
+But '1010' (the last 0 is missing) will produce the error message:
+C<Unknown bit sequence starting at 3 in the bitstring>.
 
 =back   
 
