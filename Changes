@@ -1,5 +1,11 @@
 Revision history for Perl extension Algorithm::Huffman.
 
+0.06  Tue Sep 02
+        - improved handling when called with wrong parameters
+        
+        Thanks a lot to Pierre Leopold who reported me a bug that could happen 
+        following to the missing parameter validation.
+
 0.05  Thu Aug 29
         - improved decode_bitstring method
           * exceptions are raised instead of an endless loop

@@ -6,3 +6,4 @@ README
 t/1.t
 t/create_huffman_tree.t
 t/encode_bitstring.t
+t/wrong_parameter.t

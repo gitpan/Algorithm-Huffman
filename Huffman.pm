@@ -3,6 +3,7 @@ package Algorithm::Huffman;
 use 5.006;
 use strict;
 use warnings;
+use Carp;
 
 require Exporter;
 
@@ -10,7 +11,7 @@ our @ISA = qw(Exporter);
 
 # Nothing to export here
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 use Heap::Fibonacci;
 use Tree::DAG_Node;
@@ -20,10 +21,21 @@ sub new {
     my ($proto, $count_hash) = @_;
     my $class = ref($proto) || $proto;
     
+    croak "Undefined counting hash" unless defined $count_hash;
+    croak "The argument for the counting hash is not a hash reference, as expected" 
+        unless ref($count_hash) eq 'HASH';
+    croak "The counting hash must have at least 2 keys" 
+        unless scalar(keys(%$count_hash)) >= 2;
+    
     my $heap = Heap::Fibonacci->new;
     
     my $size = 0;
     while (my ($str, $count) = each %$count_hash) {
+        croak "The count for each character/substring must be a number"
+            unless $count =~ /^(-)?\d+(\.\d+)?$/;
+        croak "The count for each character/substring must be positive (>= 0)," .
+              "but found counting '$count' for the string '$str'"
+            unless $count >= 0;
         my $leaf = Tree::DAG_Node->new({name => $str});
         $leaf->attribute->{bit} = "";
         $heap->add( KeyValuePair->new( $leaf, $count ) );
@@ -166,6 +178,10 @@ Algorithm::Huffman - Perl extension that implements the Huffman algorithm
 
   use Algorithm::Huffman;
 
+  my %char_counting = map {$_ => int rand(100)} ('a' .. 'z', 'A' .. 'Z');
+  # or better the real counting for your characters
+  # as the huffman algorithm doesn't work good with random data :-)) 
+ 
   my $huff = Algorithm::Huffman->new(\%char_counting);
   my $encode_hash = $huff->encode_hash;
   my $decode_hash = $huff->decode_hash;
@@ -279,6 +295,30 @@ the values are their occurencies.
 A hashref is used, as such a hash can become quite large
 (e.g. all three letter combinations).
 
+The passed hash must have at least 2 elements,
+as a huffman algorithm for one or zero elements isn't
+very useful for anything. 
+Even for two elements, the one becomes "0",
+the other "1", independent of their counting.
+
+The counting (given as values in the counting hash),
+must be greater or equal to zero. (Negative countings doesn't make
+any sense). If one character/substring has a counting of zero,
+it is still encoded. It's a feature thinking to a situation where you
+would try to encode a large text. You count every character and 
+most common substrings in the first part of this large text
+(or from a dictionary) to get a good assumption of the whole 
+character/substring counting. There could be some ASCII characters
+(e.g. 'ä' in an english text), that didn't occur. To ensure that 
+the whole text is encodable, you simply set the counting of every 
+character not yet counted to zero. That guarantees that
+there is an encoding/decoding bit sequences for these ones.
+It also guarantees that these bit sequences are longer than
+all other encoding/decoding sequences of counted characters/substrings.
+
+The countings could needn't be integers,
+they could also be fractions (e.g. percentage).
+
 =item $huff->encode_hash
 
 Returns a reference to the encoding hash.
@@ -343,9 +383,6 @@ None by default.
 
 =head1 BUGS
 
-There is no great parameter validation.
-That will be changed in future versions.
-
 If a character/string has occurs zero times, it is still coded.
 At the moment, you have to grep them out before.
 I don't plan to change it,
@@ -368,7 +405,10 @@ I'll need a C<encode> and C<decode> (working with binary data
 and not only with bitstrings) method
 based on the created internal huffman table should be implemented.
 
-Try to catch more possible errors when wrong arguments are passed.
+=head1 THANKS
+
+Thanks to Perry Leopold who found some problems
+with the parameter validation and the synopsis.
 
 =head1 SEE ALSO
 

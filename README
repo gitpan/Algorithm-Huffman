@@ -1,18 +1,23 @@
-Algorithm/Huffman version 0.02
+Algorithm/Huffman version 0.06
 ==============================
 
 SYNOPSIS
 
- use Algorithm::Huffman;
+  use Algorithm::Huffman;
 
+  my %char_counting = map {$_ => int rand(100)} ('a' .. 'z', 'A' .. 'Z');
+  # or better the real counting for your characters
+  # as the huffman algorithm doesn't work good with random data :-)) 
+ 
   my $huff = Algorithm::Huffman->new(\%char_counting);
   my $encode_hash = $huff->encode_hash;
   my $decode_hash = $huff->decode_hash;
   
   print "Look at the encoding bitstring of 'Hello': ", 
         $huff->encode_bitstring("Hello");
+        
   print "The decoding of 110011001 is ", $huff->decode_bitstring("110011001");
-  
+
 
 INSTALLATION
 
@@ -32,6 +37,7 @@ This module requires these other modules and libraries:
          Heap::Elem       
          Tree::DAG_Node   
          List::Util
+         Carp
 
          # Modules only for the test script
          Test::More       

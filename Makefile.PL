@@ -11,6 +11,7 @@ WriteMakefile(
          Heap::Elem       => 0,
          Tree::DAG_Node   => 0,
          List::Util       => 0,
+         Carp             => 0,
 
          # Modules for the test script
          Test::More       => 0,
