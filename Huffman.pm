@@ -10,7 +10,7 @@ our @ISA = qw(Exporter);
 
 # Nothing to export here
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 use Heap::Fibonacci;
 use Tree::DAG_Node;
@@ -43,13 +43,17 @@ sub new {
     my $root = $heap->extract_minimum->key;
     
     my %encode;
+    my %decode;
     foreach my $leaf ($root->leaves_under) {
-        my @bit = map {$_->attribute->{bit}} ($leaf, $leaf->ancestors);
-        $encode{$leaf->name} = join "", reverse @bit;
+        my @bit = reverse map {$_->attribute->{bit}} ($leaf, $leaf->ancestors);
+        my $bitstr = join "", @bit;
+        $encode{$leaf->name} = $bitstr;
+        $decode{$bitstr}     = $leaf->name;
     }
     
     my $self = {
-        encode => \%encode
+        encode => \%encode,
+        decode => \%decode
     };
     
     bless $self, $class;
@@ -58,6 +62,11 @@ sub new {
 sub encode_hash {
     my $self = shift;
     $self->{encode};
+}
+
+sub decode_hash {
+    my $self = shift;
+    $self->{decode};
 }
 
 1;
@@ -112,6 +121,7 @@ Algorithm::Huffman - Perl extension that implements the Huffman algorithm
 
   my $huff = Algorithm::Huffman->new(\%char_counting);
   my $encode_hash = $huff->encode_hash;
+  my $decode_hash = $huff->decode_hash;
 
 =head1 DESCRIPTION
 
@@ -222,8 +232,16 @@ A hashref is used, as such a hash can become quite large
 Returns a reference to the encoding hash.
 The keys of the encoding hash are the characters/strings passed
 at the construction. The values are their bit representation.
-Please note that a string of ones and zeros is returned and not
-a binary number.
+Please note that the bit represantations are strings 
+of ones and zeros is returned and not binary numbers.
+
+=item $huff->decode_hash
+
+Returns a reference to the decoding hash.
+The keys of the decoding hash are the bit presentations,
+while the values are the characters/strings the bitstrings stands for.
+Please note that the bit represantations are strings 
+of ones and zeros is returned and not binary numbers.
 
 =back   
 
@@ -254,9 +272,7 @@ as this code is still in the ALPHA stadium.
 
 =head1 TODO
 
-I still need a C<decode_hash> and a C<as_tree> method.
-
-Finally a C<encode> and C<decode> method
+I'll need a C<encode> and C<decode> method
 based on the created internal huffman table should be implemented.
 
 =head1 SEE ALSO

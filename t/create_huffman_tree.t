@@ -5,7 +5,7 @@ use warnings;
 
 use Algorithm::Huffman;
 
-use Test::More tests => 9;
+use Test::More qw/no_plan/; #tests => 9;
 use Test::ManyParams;
 use Test::Exception;
 
@@ -30,10 +30,20 @@ use constant STANDARD_CHAR_COUNTING => (
 
 foreach (STANDARD_CHAR_COUNTING) {
     my ($count_hash, $encode_hashs_exp) = @$_;
+    # turn around the encode hash to decode hash (values <=> keys)
+    my $decode_hashs_exp = [map {reverse_hash($_)} @$encode_hashs_exp];
     my $huff = Algorithm::Huffman->new($count_hash);
     any_ok {eq_hash $huff->encode_hash, $_[0]} $encode_hashs_exp 
     or diag "Got encoding hash " . Dumper($huff->encode_hash),
             "with characters " . Dumper($count_hash);
+    any_ok {eq_hash $huff->decode_hash, $_[0]} $decode_hashs_exp 
+    or diag "Got decoding hash " . Dumper($huff->decode_hash),
+            "with characters " . Dumper($count_hash);
+}
+
+sub reverse_hash {
+    my %hash = %{shift()};
+    return { map {($hash{$_} => $_)} keys %hash };
 }
 
 my $huff = Algorithm::Huffman->new({a => 15, b => 7, c => 6, d => 6, e => 5});
