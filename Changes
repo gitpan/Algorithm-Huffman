@@ -1,5 +1,8 @@
 Revision history for Perl extension Algorithm::Huffman.
 
+0.09  Fri Sep 06
+        - implemented encode and decode method
+
 0.08  Wed Sep 04
         - improved documentation (runnable synopsis)
         - refactoring of the current code

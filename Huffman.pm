@@ -9,7 +9,7 @@ require Exporter;
 
 our @ISA = qw(Exporter);
 
-our $VERSION = '0.08';
+our $VERSION = '0.09';
 
 use Heap::Fibonacci;
 use Tree::DAG_Node;
@@ -97,6 +97,26 @@ sub encode_bitstring {
     return $bitstring;
 }
 
+sub encode {
+    my ($self, $string) = @_;
+    my $max_length_encoding_key = $self->{max_length_encoding_key};
+    my %encode_hash = %{$self->encode_hash};
+
+    my $bitvector = "";
+    my $offset = 0;
+    my ($index, $max_index) = (0, length($string)-1);
+    while ($index <= $max_index) {
+        for (my $l = $max_length_encoding_key; $l > 0; $l--) {
+            if (my $bits = $encode_hash{substr($string, $index, $l)}) {
+                vec($bitvector, $offset++, 1) = $_ for split //, $bits;
+                $index     += $l;
+                last;
+            }
+        }
+    }
+    return $bitvector;
+}
+
 sub decode_bitstring {
     my ($self, $bitstring) = @_;
     
@@ -116,10 +136,38 @@ sub decode_bitstring {
             }
         }
         defined $decode
-            or die "Unknown bit sequence starting at $index in the bitstring" 
+            or die "Unknown bit sequence starting at index $index in the bitstring";
     }
     return $string;
 }
+
+sub decode {
+    my ($self, $bitvector) = @_;
+    
+    my $max_length_decoding_key = $self->{max_length_decoding_key};
+    my $min_length_decoding_key = $self->{min_length_decoding_key};
+    my %decode_hash = %{$self->decode_hash};
+    
+    my $string = "";
+    my ($offset, $max_offset) = (0, 8 * (length($bitvector)-1));
+    while ($offset < $max_offset) {
+        my $decode = undef;
+        my $bitpattern = "";
+        my $last_offset_ok = $offset;
+        foreach my $l (1 .. $max_length_decoding_key) {
+            $bitpattern .= vec($bitvector,$offset++,1);
+            if ($decode = $decode_hash{$bitpattern}) {
+                $string .= $decode;
+                last;
+            }
+        }
+        defined $decode
+            or die "Unknown bit sequence starting at offset $last_offset_ok in the bitstring";
+    }
+    return $string;
+}
+
+
 sub __validate_counting_hash {
     my $c = shift;
     my $error_msg = undef;
@@ -319,7 +367,7 @@ there is an encoding/decoding bit sequences for these ones.
 It also guarantees that these bit sequences are longer than
 all other encoding/decoding sequences of counted characters/substrings.
 
-The countings could needn't be integers,
+The countings needn't be integers,
 they could also be fractions (e.g. percentage).
 
 =item $huff->encode_hash
@@ -357,6 +405,12 @@ The greedy way isn't guarantueed to exist also in future versions.
 substrings from the huffman tree
 and to select the one with the shortest encoding bitstring).
 
+=item $huff->encode($string)
+
+Returns the huffman encoded packed bitvector of C<$string>.
+
+Please look to the description of C<encode_bitstring> for details.
+
 =item $huff->decode_bitstring($bitstring)
 
 Decodes a bitstring of '1' and '0' to the original string.
@@ -376,7 +430,13 @@ you have a Huffman-Table
   
 and wanted to code 'abc'. The right coding is '10100'.
 But '1010' (the last 0 is missing) will produce the error message:
-C<Unknown bit sequence starting at 3 in the bitstring>.
+C<Unknown bit sequence starting at index 3 in the bitstring>.
+
+=item $huff->decode($bitvector)
+
+Decodes a packed bitvector (encoded with the ->encode method).
+
+Please look to the description of C<decode_bitstring> for details.
 
 =back   
 
@@ -397,6 +457,23 @@ Reason is that they could occur in other texts and
 you would have to guarantee that you can code every text
 without any lost information)
 
+If you encode part for part your stream,
+you could get the idea of doing stuff like:
+
+  my $encode1 = $huff->encode_bitstring($chapter1);
+  my $encode2 = $huff->encode_bitstring($chapter2);
+  
+  my $total_encode = $encode1 . $encode2;
+  
+  my $all_chapters = $huff->decode_bitstring($total_encode);
+  
+  # Now $all_chapter eq $chapter1 . $chapter2
+  
+That will work fine,
+but I'm afraid, it won't work,
+if you replace the C<..code_bitstring methods>
+with the C<..code> methods.
+
 It isn't tested with a big histogram of characters/strings.
 
 There could be some others,
@@ -404,9 +481,9 @@ as this code is still in the ALPHA stadium.
 
 =head1 TODO
 
-I'll need a C<encode> and C<decode> (working with binary data
-and not only with bitstrings) method
-based on the created internal huffman table should be implemented.
+Up till now, I didn't care a lot about the speed.
+Some parts could still be improved in Perl and a lot of the parts
+could be reimplemented in C.
 
 =head1 THANKS
 

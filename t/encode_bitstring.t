@@ -2,7 +2,7 @@
 
 use Algorithm::Huffman;
 use String::Random qw/random_string/;
-use Test::More tests => 3 * 20 + 2;
+use Test::More tests => 5 * 20 + 2;
 use List::Util qw/max/;
 use Data::Dumper;
 use Test::Exception;
@@ -43,11 +43,22 @@ for (1 .. 20) {
     my $encoded_with_huffman = $huff->encode_bitstring($s);
     is $encoded_with_huffman, $c, "Coded huffman string of '$s'"
     or diag Dumper($huff);
+    
+    my $encoded_with_huffman_bitvector = $huff->encode($s);
+    is $encoded_with_huffman_bitvector,
+       pack("b*", $encoded_with_huffman), 
+       "->encode('$s') checked with pack";
+    
     cmp_ok length($encoded_with_huffman)/8, "<=", LONG_STRING_LENGTH, 
        "Encoding produced a compression lower than only the compression of 26 characters";
+    
     is $huff->decode_bitstring($encoded_with_huffman),
        $s,
        "Decoding of encoding bitstring should be the same as the orig";
+       
+    is $huff->decode($encoded_with_huffman_bitvector),
+       $s,
+       "Decoding of encoding (packed) bitvector should be the same as the orig";
 }
 
 my $string    = random_string('c' x LONG_STRING_LENGTH);
