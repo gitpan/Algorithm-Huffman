@@ -1,0 +1,7 @@
+Changes
+Huffman.pm
+Makefile.PL
+MANIFEST
+README
+t/1.t
+t/create_huffman_tree.t

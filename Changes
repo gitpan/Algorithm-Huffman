@@ -1,0 +1,9 @@
+Revision history for Perl extension Algorithm::Huffman.
+
+0.01  Tue Aug 13
+        - implemented new and encode_hash method
+          * my $huff = new ({$str1 => $count1, $str2 => $count2, $str3 => $count3, ...})
+          * my $encode_hash = $huff->encode_hash
+	- original version; created by h2xs 1.22 with options
+		-XA -b 5.6.0 Algorithm::Huffman
+
