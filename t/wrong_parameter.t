@@ -48,8 +48,7 @@ throws_ok {
   
 lives_ok {
     Algorithm::Huffman->new({a => 1, b => 1, c => 0})
-} qr/positive/i,
-  "->new({a => 1, b => 1, c => 0})";  
+} "->new({a => 1, b => 1, c => 0})";  
 
 throws_ok {
     Algorithm::Huffman->new({a => 1, b => 1, c => -1})

@@ -11,7 +11,7 @@ our @ISA = qw(Exporter);
 
 # Nothing to export here
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 use Heap::Fibonacci;
 use Tree::DAG_Node;

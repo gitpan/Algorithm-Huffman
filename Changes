@@ -1,5 +1,9 @@
 Revision history for Perl extension Algorithm::Huffman.
 
+0.07  Tue Sep 02
+        - fixed bug in test script,
+          (called lives_ok with 3 arguments instead of two :-( )
+
 0.06  Tue Sep 02
         - improved handling when called with wrong parameters
         
