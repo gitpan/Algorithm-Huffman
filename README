@@ -11,6 +11,7 @@ SYNOPSIS
   
   print "Look at the encoding bitstring of 'Hello': ", 
         $huff->encode_bitstring("Hello");
+  print "The decoding of 110011001 is ", $huff->decode_bitstring("110011001");
   
 
 INSTALLATION

@@ -1,5 +1,11 @@
 Revision history for Perl extension Algorithm::Huffman.
 
+0.04  Wed Aug 28
+        - implemented decode_bitstring($bitstring) method
+        - fixed bug: The returned encode_bitstring had 
+          only the length of the $orig_string,
+          and not longer
+
 0.03  Mon Aug 26
         - implemented encode_bitstring($orig_string) method
 

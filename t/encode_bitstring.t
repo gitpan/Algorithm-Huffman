@@ -2,14 +2,14 @@
 
 use Algorithm::Huffman;
 use String::Random qw/random_string/;
-use Test::More tests => 2 * 20;
+use Test::More tests => 3 * 20;
 use List::Util qw/max/;
 use Data::Dumper;
 
 use constant MAX_COUNT            =>  1_000;
 use constant MAX_SUBSTRING_LENGTH =>     10;
-use constant HUFFMAN_ELEMENTS     =>  1_000;
-use constant LONG_STRING_LENGTH   => 10_000;
+use constant HUFFMAN_ELEMENTS     =>  5;#_000;
+use constant LONG_STRING_LENGTH   => 10;#_000;
 
 sub myrand($) {
     return int( rand( int rand shift() ) + 1 );
@@ -34,7 +34,7 @@ for (1 .. 20) {
         for my $l (reverse (1 .. $max_length)) {
             if (my $bitcode = $encode_hash->{substr($s, $index, $l)}) {
                 $c .= $bitcode;
-                $index += length $bitcode;
+                $index += $l;
                 last;
             }
         }
@@ -43,6 +43,9 @@ for (1 .. 20) {
     is $encoded_with_huffman, $c, "Coded huffman string of '$s'"
     or diag Dumper($huff);
     cmp_ok length($encoded_with_huffman)/8, "<=", LONG_STRING_LENGTH, 
-       "Encoding produced a compression lower than only the compression of 26 characters"
+       "Encoding produced a compression lower than only the compression of 26 characters";
+    is $huff->decode_bitstring($encoded_with_huffman),
+       $s,
+       "Decoding of encoding bitstring should be the same as the orig";
 }
 

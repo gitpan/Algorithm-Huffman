@@ -10,7 +10,7 @@ our @ISA = qw(Exporter);
 
 # Nothing to export here
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 use Heap::Fibonacci;
 use Tree::DAG_Node;
@@ -82,12 +82,33 @@ sub encode_bitstring {
         for (my $l = $max_length_encoding_key; $l > 0; $l--) {
             if (my $bits = $encode_hash{substr($string, $index, $l)}) {
                 $bitstring .= $bits;
-                $index     += length $bits;
+                $index     += $l;
                 last;
             }
         }
     }
     return $bitstring;
+}
+
+sub decode_bitstring {
+    my ($self, $bitstring) = @_;
+    my %decode_hash = %{$self->decode_hash};
+    
+    my $string = "";
+    my ($index, $max_index) = (0, length($bitstring)-1);
+    while ($index < $max_index) {
+        for (my $l = 1; "search for a decode possibility"; $l++) {
+           if (my $decode = $decode_hash{substr($bitstring,$index,$l)}) {
+                $string .= $decode;
+                $index  += $l;
+                last;
+           }
+           # anywhen a decode possibility is found
+           # thanks to the huffman algorithm
+           # of course only, if there are 1's and 0's in the string
+        }
+    }
+    return $string;
 }
 
 1;
@@ -146,6 +167,8 @@ Algorithm::Huffman - Perl extension that implements the Huffman algorithm
   
   print "Look at the encoding bitstring of 'Hello': ", 
         $huff->encode_bitstring("Hello");
+        
+  print "The decoding of 110011001 is ", $huff->decode_bitstring("110011001");
 
 =head1 DESCRIPTION
 
@@ -286,6 +309,21 @@ The greedy way isn't guarantueed to exist also in future versions.
 substrings from the huffman tree
 and to select the one with the shortest encoding bitstring).
 
+=item $huff->decode_bitstring($bitstring)
+
+Decodes a bitstring of '1' and '0' to the original string.
+Allthough the encoding could be a bit ambigious,
+the decoding is alway unambigious.
+
+Please take care that only ones and zeroes are in the bitstring.
+It isn't tested what will happen elsewhere,
+but it is assumed that the program will come into an endless loop.
+(As the method tries to match substrings (that becomes longer and longer)
+ from the bitstring with keys of the decode_hash).
+I don't catch this error case,
+as it would create a significant overhead.
+Look the ostrich algorithm for details :-))
+
 =back   
 
 =head2 EXPORT
@@ -315,8 +353,11 @@ as this code is still in the ALPHA stadium.
 
 =head1 TODO
 
-I'll need a C<encode> and C<decode> method
+I'll need a C<encode> and C<decode> (working with binary data
+and not only with bitstrings) method
 based on the created internal huffman table should be implemented.
+
+Try to catch more possible errors when wrong arguments are passed.
 
 =head1 SEE ALSO
 
